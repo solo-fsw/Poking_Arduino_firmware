@@ -17,21 +17,28 @@
   Note the time it will take the servo to get to a position depends on the speed byte,
   but also on the starting position of the servo.
 
-  Or a command with a baud rate of 4800 (see DumpMyInfo() in subs.ino).
+  Or a command with a baud rate of 4800 (see handleCommands() in subs.ino).
   For example: sending 'v' at 4800 to the Poking servo, returns the version info.
   And sending 'i' returns true if the servo (object) is still moving.
   
+  For slow testing with the Arduino Serial Monitor (No Line Ending & 115200 baud)
+  one can copy paste the 2 bytes below:
+   (=position 1 speed 1)
+  ~  (=position 126 speed 1)
+
   ****************************************************
   HW0 - Still on breadboard
   HW1 - <todo>
   
   20251204  1.0 Initial release
-  
+  20251205  1.1 
+  Do not forget to update the FirmwareVersion string below!
+
 */
 #include <EEPROM.h> // for to read/write serial number and hardware version
 #include <VarSpeedServo.h>  // for controlling the servo
 
-#define DEBUG // command out this line for non debug release!
+#define DEBUG // comment out this line for non debug release!
 #ifdef DEBUG
   #define DEBUG_PRINT(x)  Serial.print (x)
   #define DEBUG_PRINTLN(x)  Serial.println (x)
@@ -50,7 +57,7 @@ const VarSpeedServo servo; // create servo object to control the servo
 //Error codes 
 const int ERROR_SERVO_MOVING = -1;
 
-bool acknowledgeSend = false;
+bool finalPositionSent = false;
 
 void setup() {
  //writeStringToEEPROM(10, "S00000"); //Use ones to program the serial number in the eeprom of the device
@@ -66,10 +73,10 @@ void setup() {
 }
 
 void loop() {
-  if(!acknowledgeSend && !servo.isMoving()) {
+  if(!finalPositionSent && !servo.isMoving()) {
     DEBUG_PRINTLN("Sending acknowledge");  
     Serial.println(servo.read()); // acknowledge with the servo (theoretical) position 
-    acknowledgeSend = true;
+    finalPositionSent = true;
     digitalWrite(LED_BUILTIN, LOW);  // turn the LED off
   }
   if (Serial.baud() == 115200 ) { // data mode
@@ -77,7 +84,7 @@ void loop() {
       char position = (char)Serial.read(); // read position byte
       char speed = (char)Serial.read(); // read speed byte
       servo.write(position, speed); // make servo object move to position with given speed   
-      acknowledgeSend = false;
+      finalPositionSent = false;
       digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on
 
       String s = String(position, DEC);
