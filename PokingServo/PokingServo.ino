@@ -4,11 +4,26 @@
   
   Based on https://github.com/solo-fsw/UsbParMarker/tree/main/Firmware/UsbParMarkerV2
 
-  ****************************************************
-  * Works on CDC capable devices like Leonardo only! *
-  ****************************************************
+  ************************************************************
+  * Works on CDC capable devices like Arduino Leonardo only! *
+  ************************************************************
+  
+  *************************** Hardware safety *******************************
+  * The servo moves to a position when the Arduino reboots depending on the *
+  * DEFAULT_PULSE_WIDTH in VarSpeedServo.h. Make this a safe (for example   *
+  * retracted) position in the hardware design                              *
+  ***************************************************************************
 
+  Todos:
+  -Check for position and speed to be in range (0-180 0-255)
+  -Button on interrupt pin making the servo retract and go in an endless loop?
+  -Check for 4800 baud magic characters received to ‘unlock’ servo?
+  -Include in VarSpeedServo in this project?
+  -Include license txt
+  
+  ***************************************************************************
   Serial protocol:
+  115200 baud rate = data mode:
   This firmware expects 2 bytes (position and speed) with a baud rate of 115200. It
   will acknowledge receival when the servo (theoretically) reaches that position,
   with one byte, the position.
@@ -17,28 +32,30 @@
   Note the time it will take the servo to get to a position depends on the speed byte,
   but also on the starting position of the servo.
 
+  4800 baud rate = command mode:
   Or a command with a baud rate of 4800 (see handleCommands() in subs.ino).
   For example: sending 'v' at 4800 to the Poking servo, returns the version info.
   And sending 'i' returns true if the servo (object) is still moving.
   
   For slow testing with the Arduino Serial Monitor (No Line Ending & 115200 baud)
   one can copy paste the 2 bytes below:
-   (=position 1 speed 1)
+   (=position   1 speed 1)
   ~  (=position 126 speed 1)
 
-  ****************************************************
+  ***************************************************************************
+
   HW0 - Still on breadboard
   HW1 - <todo>
   
   20251204  1.0 Initial release
-  20251205  1.1 
+  202xxxxx  1.1 <todo>
   Do not forget to update the FirmwareVersion string below!
 
 */
 #include <EEPROM.h> // for to read/write serial number and hardware version
 #include <VarSpeedServo.h>  // for controlling the servo
 
-#define DEBUG // comment out this line for non debug release!
+//#define DEBUG // comment out this line for non debug release!
 #ifdef DEBUG
   #define DEBUG_PRINT(x)  Serial.print (x)
   #define DEBUG_PRINTLN(x)  Serial.println (x)
@@ -69,33 +86,43 @@ void setup() {
   VersionInfo = String(HardwareVersion + ":" + FirmwareVersion);   // Set HW version always
 
   servo.attach(9); // attaches the servo on pin 9 to the servo object
+  servo.write(90,0); //TEMPORARY to prevent faulty isMoving true state
   pinMode(LED_BUILTIN, OUTPUT); // initialize digital pin LED_BUILTIN as an output.
 }
 
 void loop() {
-  if(!finalPositionSent && !servo.isMoving()) {
-    DEBUG_PRINTLN("Sending acknowledge");  
-    Serial.println(servo.read()); // acknowledge with the servo (theoretical) position 
-    finalPositionSent = true;
-    digitalWrite(LED_BUILTIN, LOW);  // turn the LED off
-  }
   if (Serial.baud() == 115200 ) { // data mode
     if (Serial.available() > 0) {
-      char position = (char)Serial.read(); // read position byte
-      char speed = (char)Serial.read(); // read speed byte
-      servo.write(position, speed); // make servo object move to position with given speed   
-      finalPositionSent = false;
-      digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on
+      if(!servo.isMoving()) {
+        char position = (char)Serial.read(); // read position byte
+        char speed = (char)Serial.read(); // read speed byte
+        servo.write(position, speed); // make servo object move to position with given speed   
+        finalPositionSent = false;
+        digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on
 
-      String s = String(position, DEC);
-      DEBUG_PRINTLN("Received position: " + s);
-      s = String(speed, DEC);
-      DEBUG_PRINTLN("Received speed: " + s);
+        String s = String(position, DEC);
+        DEBUG_PRINTLN("Received position: " + s);
+        s = String(speed, DEC);
+        DEBUG_PRINTLN("Received speed: " + s);
+      }
+      else {
+        (char)Serial.read(); // read position byte to clear serial data
+        (char)Serial.read(); // read speed byte to clear serial data
+        DEBUG_PRINTLN("Sending ERROR_SERVO_MOVING");
+        Serial.println(ERROR_SERVO_MOVING);
+      }
     }
   }
   else if (Serial.baud() == 4800) { // command mode
     if (Serial.available() > 0) {
       handleCommands();
     }
+  }
+
+  if(!finalPositionSent && !servo.isMoving()) {
+    DEBUG_PRINTLN("Sending final position");  
+    Serial.println(servo.read()); // acknowledge with the servo (theoretical) final position 
+    finalPositionSent = true;
+    digitalWrite(LED_BUILTIN, LOW);  // turn the LED off
   }
 }
