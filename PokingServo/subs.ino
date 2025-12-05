@@ -38,6 +38,11 @@ void handleCommands() {
     case 'i':
       Serial.println(servo.isMoving());
       break;
+    case 's':
+      servo.stop();
+      Serial.println("Servo is stopped");
+      //finalPositionSent and LED will be handled in main loop()
+      break;
     default:
       Serial.println("Unknown command");
       break;
