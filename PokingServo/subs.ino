@@ -31,9 +31,19 @@ void DumpMyInfo() { //in JSON format
 }
 
 void handleCommands() {
+  String tempstr = "";
   switch (Serial.read()) {
     case 'v':
       DumpMyInfo();
+      break;
+    case 'u':
+      Serial.println("u");
+      tempstr = Serial.readString(); //read until timeout
+      tempstr.trim(); // remove any \r \n whitespace at the end of the string
+      if (tempstr == "nlock") {
+        servoUnlocked = "true";
+        Serial.println("Servo unlocked");
+      }
       break;
     case 'i':
       Serial.println(servo.isMoving());
