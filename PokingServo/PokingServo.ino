@@ -11,14 +11,14 @@
   *************************** Hardware safety *******************************
   * The servo moves to a position when the Arduino reboots depending on the *
   * DEFAULT_PULSE_WIDTH in VarSpeedServo.h. Make this a safe (for example   *
-  * retracted) position in the hardware design                              *
+  * retracted) position in the hardware design!                             *
   ***************************************************************************
 
   Todos:
   -Check for position and speed to be in range (0-180 0-255)
   -Button on interrupt pin making the servo retract and go in an endless loop?
-  -Check for 4800 baud magic characters received to ‘unlock’ servo?
-  -Include in VarSpeedServo in this project?
+  -Fix need for: servo.write(90,0); //TEMPORARY to prevent faulty isMoving true state
+  -Include in VarSpeedServo lib in this project?
   -Include license txt
   
   ***************************************************************************
@@ -26,11 +26,13 @@
   115200 baud rate = data mode:
   This firmware expects 2 bytes (position and speed) with a baud rate of 115200. It
   will acknowledge receival when the servo (theoretically) reaches that position,
-  with one byte, the position.
+  with one byte; the final position.
   position  (byte) 0 to 180
   speed     (byte) 0=full speed, 1-255 slower to faster
   Note the time it will take the servo to get to a position depends on the speed byte,
   but also on the starting position of the servo.
+  When somthings wrong (like the servo is already moving) a negative error code
+  will be returned (see Error codes: below).
 
   4800 baud rate = command mode:
   Or a command with a baud rate of 4800 (see handleCommands() in subs.ino).
@@ -41,6 +43,11 @@
   one can copy paste the 2 bytes below:
    (=position   1 speed 1)
   ~  (=position 126 speed 1)
+
+  Usage:
+  Start with sending 'unlock' @4800 ones to unlock the servo after a reboot.
+  Send 'v' @4800 to get version info and store it in the output data ones.
+  Now you can start sending position and speed byte sets to move the servo.
 
   ***************************************************************************
 
@@ -64,16 +71,18 @@
   #define DEBUG_PRINTLN(x)
 #endif
 
-//Globals
+//Globals:
 const String FirmwareVersion = "FW1.0";
 const String VersionInfo;
 const String Serialnumber;
 const String HardwareVersion;
 const VarSpeedServo servo; // create servo object to control the servo
 
-//Error codes 
-const int ERROR_SERVO_MOVING = -1;
+//Error codes:
+const int ERROR_SERVO_LOCKED = -1;
+const int ERROR_SERVO_MOVING = -2;
 
+bool servoUnlocked = false; // start servo in a locked state to prevent other software accidently moving the servo
 bool finalPositionSent = false;
 
 void setup() {
@@ -88,12 +97,22 @@ void setup() {
   servo.attach(9); // attaches the servo on pin 9 to the servo object
   servo.write(90,0); //TEMPORARY to prevent faulty isMoving true state
   pinMode(LED_BUILTIN, OUTPUT); // initialize digital pin LED_BUILTIN as an output.
+  while (!Serial);  // Wait for Serial to be ready 
+
+#ifdef DEBUG
+  DEBUG_PRINTLN("**************************************************************************");
+  DEBUG_PRINTLN("**** Warning: DEBUG defined > printing debug info and servo unlocked! ****");
+  DEBUG_PRINTLN("**************************************************************************");
+  servoUnlocked = true;
+#endif
+
 }
 
 void loop() {
-  if (Serial.baud() == 115200 ) { // data mode
+  if (Serial.baud() == 115200 ) { 
+    // ******** data mode ******** 
     if (Serial.available() > 0) {
-      if(!servo.isMoving()) {
+      if(!servo.isMoving() && servoUnlocked) {
         char position = (char)Serial.read(); // read position byte
         char speed = (char)Serial.read(); // read speed byte
         servo.write(position, speed); // make servo object move to position with given speed   
@@ -105,15 +124,22 @@ void loop() {
         s = String(speed, DEC);
         DEBUG_PRINTLN("Received speed: " + s);
       }
-      else {
+      else if(servo.isMoving() && servoUnlocked) {
         (char)Serial.read(); // read position byte to clear serial data
         (char)Serial.read(); // read speed byte to clear serial data
         DEBUG_PRINTLN("Sending ERROR_SERVO_MOVING");
         Serial.println(ERROR_SERVO_MOVING);
       }
+      else if(!servoUnlocked) {
+        (char)Serial.read(); // read position byte to clear serial data
+        (char)Serial.read(); // read speed byte to clear serial data
+        DEBUG_PRINTLN("Sending ERROR_SERVO_LOCKED");
+        Serial.println(ERROR_SERVO_LOCKED);
+      }
     }
   }
-  else if (Serial.baud() == 4800) { // command mode
+  else if (Serial.baud() == 4800) {
+    // ******** command mode ********
     if (Serial.available() > 0) {
       handleCommands();
     }
