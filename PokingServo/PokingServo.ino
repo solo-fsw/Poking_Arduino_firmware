@@ -20,6 +20,8 @@
   -Fix need for: servo.write(90,0); //TEMPORARY to prevent faulty isMoving true state
   -Include in VarSpeedServo lib in this project?
   -Include license txt
+  -Return 'manual' one 'wrong' baud rate
+  -Add 'p' command to return data protocol
   
   ***************************************************************************
   Serial protocol:
@@ -31,7 +33,7 @@
   speed     (byte) 0=full speed, 1-255 slower to faster
   Note the time it will take the servo to get to a position depends on the speed byte,
   but also on the starting position of the servo.
-  When somthings wrong (like the servo is already moving) a negative error code
+  When something is wrong (like the servo is already moving) a negative error code
   will be returned (see Error codes: below).
 
   4800 baud rate = command mode:
@@ -47,7 +49,10 @@
   Usage:
   Start with sending 'unlock' @4800 ones to unlock the servo after a reboot.
   Send 'v' @4800 to get version info and store it in the output data ones.
-  Now you can start sending position and speed byte sets to move the servo.
+  
+  Now you can start sending position and speed byte sets to move the servo:
+  if(!{isMoving by sending 'i' @4800})
+    Serial.send(postion, speed) @115200
 
   ***************************************************************************
 
@@ -82,7 +87,7 @@ const VarSpeedServo servo; // create servo object to control the servo
 const int ERROR_SERVO_LOCKED = -1;
 const int ERROR_SERVO_MOVING = -2;
 
-bool servoUnlocked = false; // start servo in a locked state to prevent other software accidently moving the servo
+bool servoUnlocked = false; // start servo in a locked state to prevent other software accidentally moving the servo
 bool finalPositionSent = false;
 
 void setup() {
