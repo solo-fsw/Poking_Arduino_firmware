@@ -115,7 +115,9 @@ void setup() {
 
 void loop() {
   if (Serial.baud() == 115200 ) { 
+    // ***************************
     // ******** data mode ******** 
+    // ***************************
     if (Serial.available() > 0) {
       char position = (char)Serial.read(); // read position byte
       char speed = (char)Serial.read(); // read speed byte
@@ -124,11 +126,8 @@ void loop() {
         servo.write(position, speed); // make servo object move to position with given speed   
         finalPositionSent = false;
         digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on
-
-        String s = String(position, DEC);
-        DEBUG_PRINTLN("Received position: " + s);
-        s = String(speed, DEC);
-        DEBUG_PRINTLN("Received speed: " + s);
+        DEBUG_PRINTLN("Received position: " + String(position, DEC));
+        DEBUG_PRINTLN("Received speed: " + String(speed, DEC));
       }
       else if(servo.isMoving() && servoUnlocked) {
         DEBUG_PRINTLN("Sending ERROR_SERVO_MOVING");
@@ -141,12 +140,15 @@ void loop() {
     }
   }
   else if (Serial.baud() == 4800) {
+    // ******************************
     // ******** command mode ********
+    // ******************************
     if (Serial.available() > 0) {
       handleCommands();
     }
   }
 
+  // do stuff when servo reaches the final position
   if(!finalPositionSent && !servo.isMoving()) {
     DEBUG_PRINTLN("Sending final position");
     char byte = servo.read(); // change integer position to byte 
