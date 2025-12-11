@@ -117,9 +117,10 @@ void loop() {
   if (Serial.baud() == 115200 ) { 
     // ******** data mode ******** 
     if (Serial.available() > 0) {
+      char position = (char)Serial.read(); // read position byte
+      char speed = (char)Serial.read(); // read speed byte
+
       if(!servo.isMoving() && servoUnlocked) {
-        char position = (char)Serial.read(); // read position byte
-        char speed = (char)Serial.read(); // read speed byte
         servo.write(position, speed); // make servo object move to position with given speed   
         finalPositionSent = false;
         digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on
@@ -130,14 +131,10 @@ void loop() {
         DEBUG_PRINTLN("Received speed: " + s);
       }
       else if(servo.isMoving() && servoUnlocked) {
-        (char)Serial.read(); // read position byte to clear serial data
-        (char)Serial.read(); // read speed byte to clear serial data
         DEBUG_PRINTLN("Sending ERROR_SERVO_MOVING");
         Serial.println(ERROR_SERVO_MOVING);
       }
       else if(!servoUnlocked) {
-        (char)Serial.read(); // read position byte to clear serial data
-        (char)Serial.read(); // read speed byte to clear serial data
         DEBUG_PRINTLN("Sending ERROR_SERVO_LOCKED");
         Serial.println(ERROR_SERVO_LOCKED);
       }

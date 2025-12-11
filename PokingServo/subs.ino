@@ -37,7 +37,6 @@ void handleCommands() {
       DumpMyInfo();
       break;
     case 'u':
-      Serial.println("u");
       tempstr = Serial.readString(); //read until timeout
       tempstr.trim(); // remove any \r \n whitespace at the end of the string
       if (tempstr == "nlock") {
