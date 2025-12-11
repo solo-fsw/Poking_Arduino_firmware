@@ -151,8 +151,9 @@ void loop() {
   }
 
   if(!finalPositionSent && !servo.isMoving()) {
-    DEBUG_PRINTLN("Sending final position");  
-    Serial.println(servo.read()); // acknowledge with the servo (theoretical) final position 
+    DEBUG_PRINTLN("Sending final position");
+    char byte = servo.read(); // change integer position to byte 
+    Serial.println(byte); // acknowledge with the servo (theoretical) final position 
     finalPositionSent = true;
     digitalWrite(LED_BUILTIN, LOW);  // turn the LED off
   }
