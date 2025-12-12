@@ -84,8 +84,8 @@ const String HardwareVersion;
 const VarSpeedServo servo; // create servo object to control the servo
 
 //Error codes:
-const int ERROR_SERVO_LOCKED = -1;
-const int ERROR_SERVO_MOVING = -2;
+const char ERROR_SERVO_LOCKED = -1;
+const char ERROR_SERVO_MOVING = -2;
 
 bool servoUnlocked = false; // start servo in a locked state to prevent other software accidentally moving the servo
 bool finalPositionSent = false;
