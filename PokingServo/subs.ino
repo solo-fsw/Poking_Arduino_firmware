@@ -37,11 +37,12 @@ void handleCommands() {
       DumpMyInfo();
       break;
     case 'u':
-      servoUnlocked = "true";
+      servoUnlocked = true;
       Serial.println("Servo unlocked");
       break;
     case 'i':
       Serial.println(servo.isMoving());
+      Serial.println("Are we moving?" + servo.isMoving())
       break;
     case 's':
       servo.stop();
