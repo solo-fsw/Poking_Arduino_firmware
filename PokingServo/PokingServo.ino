@@ -114,38 +114,38 @@ void setup() {
 }
 
 void loop() {
-  if (Serial.baud() == 115200 ) { 
-    // ***************************
-    // ******** data mode ******** 
-    // ***************************
-    if (Serial.available() > 0) {
+  if (Serial.available() > 0) {
+    if (Serial.baud() == 115200 ) { 
+      // ***************************
+      // ******** data mode ******** 
+      // ***************************
       char position = (char)Serial.read(); // read position byte
       char speed = (char)Serial.read(); // read speed byte
 
-      if(!servo.isMoving() && servoUnlocked) {
-        servo.write(position, speed); // make servo object move to position with given speed   
-        finalPositionSent = false;
-        digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on
-        DEBUG_PRINTLN("Received position: " + String(position, DEC));
-        DEBUG_PRINTLN("Received speed: " + String(speed, DEC));
-      }
-      else if(servo.isMoving() && servoUnlocked) {
-        DEBUG_PRINTLN("Sending ERROR_SERVO_MOVING");
-        Serial.println(ERROR_SERVO_MOVING);
-      }
-      else if(!servoUnlocked) {
+      if (!servoUnlocked) {
         DEBUG_PRINTLN("Sending ERROR_SERVO_LOCKED");
         Serial.println(ERROR_SERVO_LOCKED);
+        return;
       }
+
+      if (servo.isMoving()) {
+        DEBUG_PRINTLN("Sending ERROR_SERVO_MOVING");
+        Serial.println(ERROR_SERVO_MOVING);
+        return;
+      }
+
+      servo.write(position, speed);  // make servo object move to position with given speed
+      finalPositionSent = false;
+      digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on
+      DEBUG_PRINTLN("Received position: " + String(position, DEC));
+      DEBUG_PRINTLN("Received speed: " + String(speed, DEC));
     }
-  }
-  else if (Serial.baud() == 4800) {
-    // ******************************
-    // ******** command mode ********
-    // ******************************
-    if (Serial.available() > 0) {
+    else if (Serial.baud() == 4800) {
+      // ******************************
+      // ******** command mode ********
+      // ******************************
       handleCommands();
-    }
+    } 
   }
 
   // do stuff when servo reaches the final position
