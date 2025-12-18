@@ -27,7 +27,6 @@ void DumpMyInfo() {  //in JSON format
 }
 
 void handleCommands() {
-  String tempstr = "";
   switch (Serial.read()) {
     case 'v':
       DumpMyInfo();

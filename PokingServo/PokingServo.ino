@@ -96,7 +96,7 @@ void setup() {
   //writeStringToEEPROM(10, "S00000"); //Use ones to program the serial number in the eeprom of the device
   //writeStringToEEPROM(20, "HW0"); //Use ones to program the hardware version in the eeprom of the device
 
-  Serial.begin(4800);  // opens serial port, sets data rate to 115200 bps
+  Serial.begin(4800);  // opens serial port, sets data rate to 4800 bps
   Serialnumber = readStringFromEEPROM(10);
   HardwareVersion = readStringFromEEPROM(20);
   VersionInfo = String(HardwareVersion + ":" + FirmwareVersion);  // Set HW version always
@@ -159,7 +159,7 @@ void loop() {
   if (!finalPositionSent && !servo.isMoving()) {
     DEBUG_PRINTLN("Sending final position");
     char byte = servo.read();  // change integer position to byte
-    Serial.println(byte);      // acknowledge with the servo (theoretical) final positionü
+    Serial.println(byte);      // acknowledge with the servo (theoretical) final position
     finalPositionSent = true;
     digitalWrite(LED_BUILTIN, LOW);  // turn the LED off
   }
