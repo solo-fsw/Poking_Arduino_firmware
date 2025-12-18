@@ -146,7 +146,7 @@ void loop() {
       // ******************************
       handleCommands();
     } else {
-      DEBUG_PRINTLN("UNKNOWN BAUD. Can handle 4800 or 115200.")
+      DEBUG_PRINTLN("UNKNOWN BAUD. Can handle 4800 or 115200.");
       Serial.read(); // flush
       Serial.read(); // flush
     }
