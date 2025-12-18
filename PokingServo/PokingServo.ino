@@ -68,7 +68,7 @@
 #include <EEPROM.h>         // for to read/write serial number and hardware version
 #include <VarSpeedServo.h>  // for controlling the servo
 
-//#define DEBUG // comment out this line for non debug release!
+// #define DEBUG  // comment out this line for non debug release!
 #ifdef DEBUG
 #define DEBUG_PRINT(x) Serial.print(x)
 #define DEBUG_PRINTLN(x) Serial.println(x)
@@ -87,6 +87,7 @@ const VarSpeedServo servo;  // create servo object to control the servo
 //Error codes:
 const char ERROR_SERVO_LOCKED = -1;
 const char ERROR_SERVO_MOVING = -2;
+const char ERROR_WRONG_BAUD = -3;
 
 bool servoUnlocked = false;  // start servo in a locked state to prevent other software accidentally moving the servo
 bool finalPositionSent = false;
@@ -95,7 +96,7 @@ void setup() {
   //writeStringToEEPROM(10, "S00000"); //Use ones to program the serial number in the eeprom of the device
   //writeStringToEEPROM(20, "HW0"); //Use ones to program the hardware version in the eeprom of the device
 
-  Serial.begin(115200);  // opens serial port, sets data rate to 115200 bps
+  Serial.begin(4800);  // opens serial port, sets data rate to 115200 bps
   Serialnumber = readStringFromEEPROM(10);
   HardwareVersion = readStringFromEEPROM(20);
   VersionInfo = String(HardwareVersion + ":" + FirmwareVersion);  // Set HW version always
@@ -140,15 +141,17 @@ void loop() {
       digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on
       DEBUG_PRINTLN("Received position: " + String(position, DEC));
       DEBUG_PRINTLN("Received speed: " + String(speed, DEC));
+
     } else if (Serial.baud() == 4800) {
       // ******************************
       // ******** command mode ********
       // ******************************
       handleCommands();
     } else {
-      DEBUG_PRINTLN("UNKNOWN BAUD. Can handle 4800 or 115200.")
-      Serial.read(); // flush
-      Serial.read(); // flush
+      Serial.println(ERROR_WRONG_BAUD);
+      DEBUG_PRINTLN("Baud is at " + String(Serial.baud()));
+      Serial.read();  // flush
+      Serial.read();  // flush
     }
   }
 
@@ -156,7 +159,7 @@ void loop() {
   if (!finalPositionSent && !servo.isMoving()) {
     DEBUG_PRINTLN("Sending final position");
     char byte = servo.read();  // change integer position to byte
-    Serial.println(byte);      // acknowledge with the servo (theoretical) final position
+    Serial.println(byte);      // acknowledge with the servo (theoretical) final positionü
     finalPositionSent = true;
     digitalWrite(LED_BUILTIN, LOW);  // turn the LED off
   }

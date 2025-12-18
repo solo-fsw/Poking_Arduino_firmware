@@ -34,19 +34,19 @@ void handleCommands() {
       break;
     case 'u':
       servoUnlocked = true;
-      Serial.println("Servo unlocked");
+      digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on
+      Serial.println('u');
       break;
     case 'i':
       Serial.println(servo.isMoving());
-      Serial.println("Are we moving?" + servo.isMoving());
       break;
     case 's':
       servo.stop();
-      Serial.println("Servo is stopped");
-      //finalPositionSent and LED will be handled in main loop()
-      break;
+      digitalWrite(LED_BUILTIN, LOW);  // turn the LED off
+      Serial.println('s');
+      break;  //finalPositionSent and LED will be handled in main loop()
     default:
-      Serial.println("Unknown command");
+      Serial.println('-');
       break;
   }
 }
