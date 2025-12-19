@@ -17,10 +17,9 @@
   Todos:
   -Check for position and speed to be in range (0-180 0-255)
   -Button on interrupt pin making the servo retract and go in an endless loop?
+  -Add servo moving switch on IO pin so we can make sure servo is connected and moving
   -Fix need for: servo.write(90,0); //TEMPORARY to prevent faulty isMoving true state
-  -Include in VarSpeedServo lib in this project?
   -Include license txt
-  -Return 'manual' one 'wrong' baud rate
   -Add 'p' command to return data protocol
 
   ***************************************************************************
@@ -47,7 +46,7 @@
   ~  (=position 126 speed 1)
 
   Usage:
-  Start with sending 'unlock' @4800 ones to unlock the servo after a reboot.
+  Start with sending 'u' @4800 ones to unlock the servo after a reboot.
   Send 'v' @4800 to get version info and store it in the output data ones.
 
   Now you can start sending position and speed byte sets to move the servo:
@@ -148,7 +147,7 @@ void loop() {
       // ******************************
       handleCommands();
     } else {
-      Serial.println(ERROR_WRONG_BAUD);
+      Serial.print(ERROR_WRONG_BAUD);
       DEBUG_PRINTLN("Baud is at " + String(Serial.baud()));
       Serial.read();  // flush
       Serial.read();  // flush
