@@ -126,13 +126,13 @@ void loop() {
 
       if (!servoUnlocked) {
         DEBUG_PRINTLN("Sending ERROR_SERVO_LOCKED");
-        Serial.println(ERROR_SERVO_LOCKED);
+        Serial.write(ERROR_SERVO_LOCKED);
         return;
       }
 
       if (servo.isMoving()) {
         DEBUG_PRINTLN("Sending ERROR_SERVO_MOVING");
-        Serial.println(ERROR_SERVO_MOVING);
+        Serial.write(ERROR_SERVO_MOVING);
         return;
       }
 
@@ -148,7 +148,7 @@ void loop() {
       // ******************************
       handleCommands();
     } else {
-      Serial.println(ERROR_WRONG_BAUD);
+      Serial.write(ERROR_WRONG_BAUD);
       DEBUG_PRINTLN("Baud is at " + String(Serial.baud()));
       Serial.read();  // flush
       Serial.read();  // flush
@@ -159,7 +159,7 @@ void loop() {
   if (!finalPositionSent && !servo.isMoving()) {
     DEBUG_PRINTLN("Sending final position");
     char byte = servo.read();  // change integer position to byte
-    Serial.println(byte);      // acknowledge with the servo (theoretical) final positionü
+    Serial.write(byte); // acknowledge with the servo (theoretical) final position
     finalPositionSent = true;
     digitalWrite(LED_BUILTIN, LOW);  // turn the LED off
   }

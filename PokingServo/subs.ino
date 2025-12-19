@@ -35,18 +35,18 @@ void handleCommands() {
     case 'u':
       servoUnlocked = true;
       digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on
-      Serial.println('u');
+      Serial.write('u');
       break;
     case 'i':
-      Serial.println(servo.isMoving());
+      Serial.write(servo.isMoving());
       break;
     case 's':
       servo.stop();
       digitalWrite(LED_BUILTIN, LOW);  // turn the LED off
-      Serial.println('s');
+      Serial.write('s');
       break;  //finalPositionSent and LED will be handled in main loop()
     default:
-      Serial.println('-');
+      Serial.write('-');
       break;
   }
 }
