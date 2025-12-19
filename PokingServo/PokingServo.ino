@@ -126,13 +126,13 @@ void loop() {
 
       if (!servoUnlocked) {
         DEBUG_PRINTLN("Sending ERROR_SERVO_LOCKED");
-        Serial.println(ERROR_SERVO_LOCKED);
+        Serial.print(ERROR_SERVO_LOCKED);
         return;
       }
 
       if (servo.isMoving()) {
         DEBUG_PRINTLN("Sending ERROR_SERVO_MOVING");
-        Serial.println(ERROR_SERVO_MOVING);
+        Serial.print(ERROR_SERVO_MOVING);
         return;
       }
 
@@ -159,7 +159,7 @@ void loop() {
   if (!finalPositionSent && !servo.isMoving()) {
     DEBUG_PRINTLN("Sending final position");
     char byte = servo.read();  // change integer position to byte
-    Serial.println(byte);      // acknowledge with the servo (theoretical) final position
+    Serial.print(byte);      // acknowledge with the servo (theoretical) final position
     finalPositionSent = true;
     digitalWrite(LED_BUILTIN, LOW);  // turn the LED off
   }
