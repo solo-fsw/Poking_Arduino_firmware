@@ -6,6 +6,6 @@ To get an idea, the breadboard with the Arduino and a servo:
 
 <img width="545" height="727" alt="image" src="https://github.com/user-attachments/assets/bfd19687-79a3-490b-9a1c-4bd77740f48c" />
 
-Adn the (never printed) 3d housing:
+And the (never printed) 3d housing:
 
 <img width="539" height="455" alt="image" src="https://github.com/user-attachments/assets/c00c9361-7e5b-4bb3-8f96-dd965caab31b" />
